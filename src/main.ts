@@ -2,6 +2,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { setupSwagger } from './config/swagger.config';
 
 // Hot Module Replacement
 declare const module: any;
@@ -15,6 +16,9 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
+
+  // Setup Swagger Documentation
+  setupSwagger(app);
 
   // Set prefix
   app.setGlobalPrefix('api/v1');
