@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
+// Hot Module Replacement
 declare const module: any;
 
 async function bootstrap() {
@@ -25,6 +26,7 @@ async function bootstrap() {
 
   await app.listen(port);
 
+  // Hot Module Replacement
   if (module.hot) {
     module.hot.accept();
     module.hot.dispose(() => app.close());

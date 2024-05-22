@@ -1,6 +1,13 @@
 const nodeExternals = require('webpack-node-externals');
 const { RunScriptWebpackPlugin } = require('run-script-webpack-plugin');
 
+/**
+ * Returns a modified webpack configuration object with added HMR (Hot Module Replacement) functionality.
+ *
+ * @param {Object} options - The original webpack configuration object.
+ * @param {Object} webpack - The webpack module.
+ * @return {Object} The modified webpack configuration object.
+ */
 module.exports = function (options, webpack) {
   return {
     ...options,
