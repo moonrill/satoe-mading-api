@@ -12,4 +12,8 @@ export default () => ({
     synchronize: true,
     logging: true,
   },
+  jwt: {
+    secret: process.env.JWT_SECRET_KEY,
+    signOptions: { expiresIn: '7d' },
+  },
 });

@@ -27,6 +27,13 @@ export class UserService {
     });
   }
 
+  /**
+   * Creates a new user.
+   *
+   * @param {CreateUserDto} body - The user data to create.
+   * @return {Promise<User>} The created user.
+   * @throws {ConflictException} If the user already exists.
+   */
   async createUser(body: CreateUserDto) {
     // Check if user is already exists
     const isUserExists = await this.userRepository.findOne({
@@ -45,7 +52,6 @@ export class UserService {
 
     // Create new User
     const user = this.userRepository.create(body);
-    const { password, ...result } = await this.userRepository.save(user);
-    return result;
+    return await this.userRepository.save(user);
   }
 }
