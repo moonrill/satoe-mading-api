@@ -1,15 +1,16 @@
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
+import { Role } from 'src/modules/role/entities/role.entity';
 import {
   BeforeInsert,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserRole } from '../enum/user-role.enum';
 
 @Entity()
 export class User {
@@ -21,9 +22,6 @@ export class User {
 
   @Column({ type: 'varchar', length: 19, unique: true, nullable: true })
   nip: string;
-
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.SISWA })
-  role: UserRole;
 
   @Column({ type: 'varchar', length: 20 })
   username: string;
@@ -37,6 +35,9 @@ export class User {
 
   @Column({ nullable: true })
   avatar: string;
+
+  @ManyToOne(() => Role, (role) => role.users)
+  role: Role;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
