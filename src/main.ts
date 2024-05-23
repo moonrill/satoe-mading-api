@@ -2,6 +2,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { NotFoundInterceptor } from './common/interceptors/not-found.interceptor';
 import { setupSwagger } from './config/swagger.config';
 
 // Hot Module Replacement
@@ -16,6 +17,9 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
+
+  // Add Global Interceptors
+  app.useGlobalInterceptors(new NotFoundInterceptor());
 
   // Setup Swagger Documentation
   setupSwagger(app);
