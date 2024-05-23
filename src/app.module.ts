@@ -5,6 +5,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ConfigsModule } from './config/main.config';
 import { TypeOrmConfigService } from './config/typeorm.config';
 import { AuthModule } from './modules/auth/auth.module';
+import { RoleModule } from './modules/role/role.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
@@ -16,6 +17,7 @@ import { UserModule } from './modules/user/user.module';
     }),
     AuthModule,
     UserModule,
+    RoleModule,
   ],
   controllers: [],
   providers: [
