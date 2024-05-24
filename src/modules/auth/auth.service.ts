@@ -39,17 +39,7 @@ export class AuthService {
   ): Promise<User | null> {
     const user = await this.userService.findOne(identifier);
 
-    if (!user) {
-      return null;
-    }
-
-    const isPasswordValid = this.comparePassword(password, user.password);
-
-    if (!isPasswordValid) {
-      return null;
-    }
-
-    return user;
+    return user && this.comparePassword(password, user.password) ? user : null;
   }
 
   /**
@@ -86,7 +76,6 @@ export class AuthService {
     const token = this.generateToken(user);
 
     return {
-      message: 'Login successful',
       user,
       access_token: token,
     };
@@ -96,16 +85,10 @@ export class AuthService {
    * Registers a new user.
    *
    * @param {CreateUserDto} userData - The user data to create.
-   * @returns {Promise<{ message: string, user: User }>} An object containing a success message and the created user.
+   * @returns {Promise<User>} An object containing a success message and the created user.
    * @throws {Error} If there is an error creating the user.
    */
-  async register(
-    userData: CreateUserDto,
-  ): Promise<{ message: string; user: User }> {
-    const createdUser = await this.userService.createUser(userData);
-    return {
-      message: 'User created successfully',
-      user: createdUser,
-    };
+  async register(userData: CreateUserDto): Promise<User> {
+    return await this.userService.createUser(userData);
   }
 }
