@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   Injectable,
   NestInterceptor,
+  NotFoundException,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
 import { ApiResponseDto } from '../dto/response.dto';
@@ -16,11 +17,16 @@ export class ResponseInterceptor<T>
     next: CallHandler<T>,
   ): Observable<ApiResponseDto<T>> | Promise<Observable<ApiResponseDto<T>>> {
     return next.handle().pipe(
-      map((data) => ({
-        status: true,
-        data,
-        message: 'Request successful',
-      })),
+      map((data) => {
+        if (data === null) {
+          throw new NotFoundException('Data not found');
+        }
+        return {
+          status: true,
+          data,
+          message: 'Request successful',
+        };
+      }),
     );
   }
 }
