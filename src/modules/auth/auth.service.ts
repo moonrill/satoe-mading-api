@@ -29,7 +29,7 @@ export class AuthService {
   /**
    * Validates a user by their identifier and password.
    *
-   * @param {string} identifier - The identifier of the user to validate. It can be the username, email, NIS, or NIP.
+   * @param {string} identifier - The identifier of the user to validate. It can be the id, username, email, NIS, or NIP.
    * @param {string} password - The password to validate against the user's password.
    * @return {Promise<User | null>} A promise that resolves to the validated user if the credentials are valid, or null if the user does not exist or the passwords do not match.
    */
@@ -51,7 +51,6 @@ export class AuthService {
   generateToken(user: User): string {
     const payload = {
       sub: user.id,
-      username: user.username,
     };
 
     return this.jwtService.sign(payload, {
@@ -73,11 +72,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.generateToken(user);
+    const accessToken = this.generateToken(user);
+    const expiresIn = this.jwtService.decode(accessToken)['exp'];
 
     return {
       user,
-      access_token: token,
+      accessToken,
+      expiresIn,
     };
   }
 

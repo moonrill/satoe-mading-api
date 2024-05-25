@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -13,18 +17,25 @@ export class UserService {
   /**
    * Finds a user by their identifier.
    *
-   * @param {string} identifier - The identifier of the user to find. It can be the username, email, NIS, or NIP.
+   * @param {string} identifier - The identifier of the user to find. It can be the id, username, email, NIS, or NIP.
    * @return {Promise<User | any>} A promise that resolves to the found user, or any other value if the user is not found.
    */
-  async findOne(identifier: string): Promise<User | any> {
-    return this.userRepository.findOne({
+  async findOne(identifier: string): Promise<User> {
+    const user = await this.userRepository.findOne({
       where: [
+        { id: identifier },
         { username: identifier },
         { email: identifier },
         { nis: identifier },
         { nip: identifier },
       ],
     });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user;
   }
 
   /**
