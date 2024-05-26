@@ -1,34 +1,74 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { RoleService } from './role.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { RoleService } from './role.service';
 
+@ApiTags('Role')
+@ApiInternalServerErrorResponse({ description: 'Internal server error' })
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
+  @ApiCreatedResponse({
+    description: 'The role has been successfully created.',
+  })
+  @ApiConflictResponse({ description: 'Role already exists.' })
+  @ApiNotFoundResponse({ description: 'Permission not found.' })
   @Post()
-  create(@Body() createRoleDto: CreateRoleDto) {
-    return this.roleService.create(createRoleDto);
+  async create(@Body() createRoleDto: CreateRoleDto) {
+    return await this.roleService.create(createRoleDto);
   }
 
+  @ApiOkResponse({ description: 'The roles have been successfully listed.' })
   @Get()
-  findAll() {
-    return this.roleService.findAll();
+  async findAll() {
+    return await this.roleService.findAll();
   }
 
+  @ApiOkResponse({ description: 'The role has been successfully found.' })
+  @ApiNotFoundResponse({ description: 'Role not found.' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.roleService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.roleService.findOne(+id);
   }
 
+  @ApiOkResponse({ description: 'The role has been successfully updated.' })
+  @ApiConflictResponse({ description: 'Role already exists.' })
+  @ApiNotFoundResponse({ description: 'Role not found.' })
+  @ApiNotFoundResponse({ description: 'Permission not found.' })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
-    return this.roleService.update(+id, updateRoleDto);
+  async update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
+    return await this.roleService.update(+id, updateRoleDto);
   }
 
+  @ApiNoContentResponse({
+    description: 'The role has been successfully deleted.',
+  })
+  @ApiNotFoundResponse({ description: 'Role not found.' })
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roleService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return await this.roleService.remove(+id);
   }
 }
