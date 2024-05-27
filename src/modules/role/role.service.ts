@@ -65,7 +65,7 @@ export class RoleService {
     return roles.map((role) => ({
       id: role.id,
       name: role.name,
-      permissions: role.permissions.map((permission) => permission.action),
+      permissions: role.permissions.map((permission) => permission.name),
     }));
   }
 
