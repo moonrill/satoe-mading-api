@@ -16,6 +16,7 @@ export class CreateUserDto {
     type: String,
     description: 'NIS of the user if role is Siswa',
     maxLength: 11,
+    example: '1234567890',
   })
   @IsOptional()
   @IsNumberString()
@@ -27,6 +28,7 @@ export class CreateUserDto {
     type: String,
     description: 'NIP of the user if role is Guru',
     maxLength: 19,
+    example: '12345678901234567',
   })
   @IsOptional()
   @IsNumberString()
@@ -38,6 +40,7 @@ export class CreateUserDto {
     type: String,
     description: 'Username of the User',
     maxLength: 20,
+    example: 'johndoe',
   })
   @IsNotEmpty()
   @Matches(/^\S*$/, { message: 'username cannot contain spaces' })
@@ -49,6 +52,7 @@ export class CreateUserDto {
     type: String,
     description: 'Email of the User',
     maxLength: 100,
+    example: 'johndoe@me.com',
   })
   @IsEmail()
   @IsNotEmpty()
@@ -60,6 +64,7 @@ export class CreateUserDto {
     type: String,
     description: 'Password of the User',
     minLength: 8,
+    example: 'password123',
   })
   @IsNotEmpty()
   @MinLength(8)
@@ -69,6 +74,7 @@ export class CreateUserDto {
     required: false,
     type: File,
     description: 'Avatar of the User',
+    example: 'avatar.png',
   })
   @IsOptional()
   @IsMimeType()
