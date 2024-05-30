@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUppercase } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUppercase,
+  Matches,
+} from 'class-validator';
 
 export class CreatePermissionDto {
   @ApiProperty({
@@ -10,6 +16,10 @@ export class CreatePermissionDto {
   })
   @IsNotEmpty()
   @IsString()
+  @Matches(/^[a-zA-Z0-9-]+$/, {
+    message:
+      'Name can only contain letters, numbers, and hyphens, and no spaces',
+  })
   name: string;
 
   @ApiProperty({
