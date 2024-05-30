@@ -13,7 +13,10 @@ export class Permission {
   description: string;
 
   @Column({ nullable: false })
-  url: string;
+  url: string; // URL pattern (e.g., '/profile', '/user/:id')
+
+  @Column({ nullable: false, length: 10 })
+  method: string; // HTTP method (e.g., 'GET', 'POST')
 
   @ManyToMany(() => Role, (role) => role.permissions)
   roles: Role[];
