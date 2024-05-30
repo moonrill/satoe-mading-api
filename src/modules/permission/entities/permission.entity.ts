@@ -12,6 +12,9 @@ export class Permission {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ nullable: false })
+  url: string;
+
   @ManyToMany(() => Role, (role) => role.permissions)
   roles: Role[];
 }
