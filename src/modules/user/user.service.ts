@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { validate as isUuid } from 'uuid';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 
@@ -21,15 +22,22 @@ export class UserService {
    * @return {Promise<User | any>} A promise that resolves to the found user, or any other value if the user is not found.
    */
   async findOne(identifier: string): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: [
-        { id: identifier },
-        { username: identifier },
-        { email: identifier },
-        { nis: identifier },
-        { nip: identifier },
-      ],
-    });
+    let user: User;
+
+    if (isUuid(identifier)) {
+      // If the identifier is a valid UUID, query by id.
+      user = await this.userRepository.findOne({ where: { id: identifier } });
+    } else {
+      // If the identifier is not a valid UUID, query by other fields.
+      user = await this.userRepository.findOne({
+        where: [
+          { username: identifier },
+          { email: identifier },
+          { nis: identifier },
+          { nip: identifier },
+        ],
+      });
+    }
 
     if (!user) {
       throw new NotFoundException();
