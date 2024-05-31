@@ -6,11 +6,9 @@ import {
   HttpStatus,
   Post,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators/public.decorator';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { UserLoginDto } from './dto/login.dto';
@@ -20,9 +18,9 @@ import { UserLoginDto } from './dto/login.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public({ route: true })
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  @Public()
   @ApiResponse({
     status: 200,
     description: 'Login success and return JWT token.',
@@ -35,8 +33,8 @@ export class AuthController {
     return await this.authService.login(body);
   }
 
+  @Public({ route: true })
   @Post('register')
-  @Public()
   @ApiResponse({
     status: 201,
     description: 'The user has been successfully created.',
@@ -53,8 +51,8 @@ export class AuthController {
     return await this.authService.register(body);
   }
 
+  @Public({ route: false, permission: true })
   @Get('profile')
-  @UseGuards(JwtAuthGuard)
   async getUser(@Req() req) {
     return req.user;
   }
