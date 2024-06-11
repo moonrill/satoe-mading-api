@@ -2,7 +2,6 @@ import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
-import { PermissionsGuard } from './common/guards/permission.guard';
 import { DatabaseModule } from './config/database/database.module';
 import environments from './config/environments';
 import { AuthModule } from './modules/auth/auth.module';
@@ -38,10 +37,10 @@ import { UserModule } from './modules/user/user.module';
     //   provide: APP_FILTER,
     //   useClass: HttpExceptionFilter,
     // },
-    {
-      provide: APP_GUARD,
-      useClass: PermissionsGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: PermissionsGuard,
+    // },
   ],
 })
 export class AppModule {}
