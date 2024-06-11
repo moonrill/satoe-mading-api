@@ -1,8 +1,8 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { setupSwagger } from './config/swagger.config';
+import environments from './config/environments';
+import { setupSwagger } from './config/swagger/swagger.config';
 
 // Hot Module Replacement
 declare const module: any;
@@ -23,10 +23,8 @@ async function bootstrap() {
   // Set prefix
   app.setGlobalPrefix('api/v1');
 
-  // Config Service
-  const configService = app.get(ConfigService);
   // Set up port
-  const port = configService.get('port') || 3000;
+  const port = environments.port;
 
   await app.listen(port);
 
