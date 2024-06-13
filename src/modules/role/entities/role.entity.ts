@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Permission } from 'src/modules/permission/entities/permission.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
@@ -35,6 +36,7 @@ export class Role {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
 
+  @Exclude()
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz' })
   deletedAt: Date;
 }
