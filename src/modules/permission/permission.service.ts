@@ -130,6 +130,6 @@ export class PermissionService {
   async remove(id: number): Promise<Permission> {
     const permission = await this.findOne(id);
 
-    return this.permissionRepository.remove(permission);
+    return this.permissionRepository.softRemove(permission);
   }
 }

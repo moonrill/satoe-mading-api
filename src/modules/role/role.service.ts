@@ -153,6 +153,6 @@ export class RoleService {
     const role = await this.findOne(id);
 
     // Remove role
-    return this.roleRepository.remove(role);
+    return this.roleRepository.softRemove(role);
   }
 }
