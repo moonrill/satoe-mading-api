@@ -31,40 +31,41 @@ import { PermissionService } from './permission.service';
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 
+  @Post()
   @ApiCreatedResponse({ description: 'Success create permission' })
   @ApiConflictResponse({ description: 'Permission already exists' })
   @ApiBadRequestResponse({ description: 'Validation error' })
-  @Post()
   async create(@Body() dto: CreatePermissionDto) {
     return await this.permissionService.create(dto);
   }
 
-  @ApiOkResponse({ description: 'Success get all permission' })
   @Get()
+  @ApiOkResponse({ description: 'Success get all permissions' })
   async findAll() {
     return await this.permissionService.findAll();
   }
 
+  @Get(':id')
   @ApiOkResponse({ description: 'Success get permission by id' })
   @ApiNotFoundResponse({ description: 'Permission not found' })
-  @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.permissionService.findOne(+id);
   }
 
+  @Patch(':id')
   @ApiOkResponse({ description: 'Success update permission' })
   @ApiNotFoundResponse({ description: 'Permission not found' })
   @ApiBadRequestResponse({ description: 'Validation error' })
   @ApiConflictResponse({ description: 'Permission already exists' })
-  @Patch(':id')
+  @ApiBadRequestResponse({ description: 'Validation error' })
   async update(@Param('id') id: string, @Body() dto: UpdatePermissionDto) {
     return await this.permissionService.update(+id, dto);
   }
 
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse({ description: 'Success delete permission' })
   @ApiNotFoundResponse({ description: 'Permission not found' })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.permissionService.remove(+id);
   }
