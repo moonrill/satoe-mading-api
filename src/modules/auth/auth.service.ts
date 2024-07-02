@@ -151,4 +151,37 @@ export class AuthService {
       isEmailExists: !!user,
     };
   }
+
+  /**
+   * Validates a user by their Google profile data.
+   * If the user doesn't exist, creates a new user with the provided data.
+   *
+   * @param {object} profile - The user's Google profile data.
+   * @param {string} profile.displayName - The user's display name.
+   * @param {Array<{ value: string }>} profile.emails - The user's email addresses.
+   * @param {Array<{ value: string }>} profile.photos - The user's profile photos.
+   * @return {Promise<User | null>} The validated user, or null if the user doesn't exist.
+   */
+  async validateUserByGoogle(profile: any): Promise<User | null> {
+    // Extract relevant information from the profile data
+    const { displayName, emails, photos } = profile;
+
+    // Find user with the provided email
+    let user = await this.userRepository.findOneBy({
+      email: emails[0].value,
+    });
+
+    // If user doesn't exist, create a new user with the provided data
+    if (!user) {
+      user = this.userRepository.create({
+        email: emails[0].value,
+        name: displayName,
+        avatar: photos[0].value,
+      });
+      await this.userRepository.save(user);
+    }
+
+    // Return the validated user
+    return user;
+  }
 }
