@@ -44,12 +44,19 @@ export class User {
   deletedAt: Date;
 
   /**
-   * Hashes the password of the user using bcrypt with a salt factor of 10.
+   * Hashes the user's password before saving it to the database.
+   * This method is called automatically by TypeORM before the user is inserted into the database.
    *
-   * @return {Promise<void>} A promise that resolves when the password has been hashed.
+   * @returns {Promise<void>} - A promise that resolves when the password has been hashed.
    */
   @BeforeInsert()
   async hashPassword(): Promise<void> {
+    // Check if the password is not null or undefined
+    if (!this.password) {
+      return;
+    }
+
+    // Hash the password with a salt round of 10
     this.password = await bcrypt.hash(this.password, 10);
   }
 }
