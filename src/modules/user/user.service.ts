@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { validate as isUuid } from 'uuid';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 
@@ -21,28 +20,16 @@ export class UserService {
    * @param {string} identifier - The identifier of the user to find. It can be the id, username, email, NIS, or NIP.
    * @return {Promise<User | any>} A promise that resolves to the found user, or any other value if the user is not found.
    */
-  async findOne(identifier: string): Promise<User> {
-    let user: User;
+  async findOne(email: string): Promise<User> {
+    // Find user by email in database
+    const user = await this.userRepository.findOneBy({ email });
 
-    if (isUuid(identifier)) {
-      // If the identifier is a valid UUID, query by id.
-      user = await this.userRepository.findOne({ where: { id: identifier } });
-    } else {
-      // If the identifier is not a valid UUID, query by other fields.
-      user = await this.userRepository.findOne({
-        where: [
-          { username: identifier },
-          { email: identifier },
-          { nis: identifier },
-          { nip: identifier },
-        ],
-      });
-    }
-
+    // Throw error if user is not found
     if (!user) {
       throw new NotFoundException();
     }
 
+    // Return user
     return user;
   }
 
@@ -55,13 +42,8 @@ export class UserService {
    */
   async createUser(body: CreateUserDto) {
     // Check if user is already exists
-    const isUserExists = await this.userRepository.findOne({
-      where: [
-        { username: body.username },
-        { email: body.email },
-        { nis: body.nis },
-        { nip: body.nip },
-      ],
+    const isUserExists = await this.userRepository.findOneBy({
+      email: body.email,
     });
 
     // Throw error if username or email already exists
@@ -71,6 +53,7 @@ export class UserService {
 
     // Create new User
     const user = this.userRepository.create(body);
+    // Save and return user
     return await this.userRepository.save(user);
   }
 }
