@@ -6,7 +6,9 @@ import {
   HttpStatus,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -54,5 +56,24 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized or invalid token' })
   async getUser(@Req() req) {
     return req.user;
+  }
+
+  @Public({ route: true, permission: true })
+  @Post('check-email')
+  @ApiOkResponse({ description: 'Success check email' })
+  async checkEmail(@Body() { email }) {
+    return await this.authService.checkEmail(email);
+  }
+
+  @Public({ route: true, permission: true })
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async google() {}
+
+  @Public({ route: true, permission: true })
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req) {
+    return await this.authService.loginByGoogle(req.user);
   }
 }

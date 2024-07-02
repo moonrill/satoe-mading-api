@@ -15,9 +15,9 @@ export class UserService {
   ) {}
 
   /**
-   * Finds a user by their identifier.
+   * Finds a user by their email.
    *
-   * @param {string} identifier - The identifier of the user to find. It can be the id, username, email, NIS, or NIP.
+   * @param {string} email - The email of the user to find.
    * @return {Promise<User | any>} A promise that resolves to the found user, or any other value if the user is not found.
    */
   async findOne(email: string): Promise<User> {

@@ -1,18 +1,21 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { User } from '../user/entities/user.entity';
-import { UserService } from '../user/user.service';
 import { UserLoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
+    @InjectRepository(User) private userRepository: Repository<User>,
     private jwtService: JwtService,
-    private configService: ConfigService,
   ) {}
 
   /**
@@ -27,69 +30,125 @@ export class AuthService {
   }
 
   /**
-   * Validates a user by their identifier and password.
+   * Validates a user by their email and password.
    *
-   * @param {string} identifier - The identifier of the user to validate. It can be the id, username, email, NIS, or NIP.
+   * @param {string} email - The email of the user to validate. It can be the id, username, email, NIS, or NIP.
    * @param {string} password - The password to validate against the user's password.
    * @return {Promise<User | null>} A promise that resolves to the validated user if the credentials are valid, or null if the user does not exist or the passwords do not match.
-   */
-  async validateUser(
-    identifier: string,
-    password: string,
-  ): Promise<User | null> {
-    const user = await this.userService.findOne(identifier);
-
-    return user && this.comparePassword(password, user.password) ? user : null;
-  }
-
-  /**
-   * Generates a JSON Web Token (JWT) for the given user.
    *
-   * @param {User} user - The user for whom the token is being generated.
-   * @return {string} The generated JWT.
+   * - If the user does not exist or the passwords do not match, an UnauthorizedException is thrown.
    */
-  generateToken(user: User): string {
-    const payload = {
-      sub: user.id,
-    };
+  async validateUser(email: string, password: string): Promise<User | null> {
+    // First, we try to find the user in the database.
+    const user = await this.userRepository.findOneBy({ email });
 
-    return this.jwtService.sign(payload, {
-      secret: this.configService.get('JWT_SECRET_KEY'),
-    });
+    // If the user does not exist or the passwords do not match, we throw an UnauthorizedException.
+    if (!user || !this.comparePassword(password, user.password)) {
+      throw new UnauthorizedException('Email or password is incorrect');
+    }
+
+    // If the user exists and the passwords match, we return the user.
+    return user;
   }
 
   /**
    * Authenticates a user by validating their credentials and generating a JWT token.
    *
-   * @param {UserLoginDto} body - The user login data containing the identifier and password.
-   * @return {Promise<object>} - A promise that resolves to an object containing the login status, user details, and access token.
+   * @param {UserLoginDto} userLoginDto - The user login data containing the email and password.
+   * @return {Promise<object>} - A promise that resolves to an object containing the login status,
+   * user details, and access token.
    * @throws {UnauthorizedException} - If the provided credentials are invalid.
    */
-  async login(body: UserLoginDto): Promise<object> {
-    const user = await this.validateUser(body.identifier, body.password);
+  async login(userLoginDto: UserLoginDto): Promise<object> {
+    // Validate the user's credentials.
+    const user = await this.validateUser(
+      userLoginDto.email,
+      userLoginDto.password,
+    );
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    // Create the payload for the JWT token.
+    const payload = {
+      email: user.email,
+      sub: user.id,
+    };
 
-    const accessToken = this.generateToken(user);
-    const expiresIn = this.jwtService.decode(accessToken)['exp'];
+    // Generate the access and refresh tokens.
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 
+    // Return the login status, user details, and access token.
     return {
       user,
       accessToken,
-      expiresIn,
+      refreshToken,
+    };
+  }
+
+  /**
+   * Authenticates a user by validating their Google credentials and generating JWT tokens.
+   *
+   * @param {object} user - The user object containing the user's email and ID.
+   * @return {Promise<object>} - A promise that resolves to an object containing the login
+   * status, user details, and access and refresh tokens.
+   */
+  async loginByGoogle(user: any): Promise<object> {
+    // Create the payload for the JWT tokens.
+    const payload = {
+      email: user.email,
+      sub: user.id,
+    };
+
+    // Generate the access and refresh tokens.
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+    // Return the login status, user details, and access and refresh tokens.
+    return {
+      user,
+      accessToken,
+      refreshToken,
     };
   }
 
   /**
    * Registers a new user.
    *
-   * @param {CreateUserDto} userData - The user data to create.
-   * @returns {Promise<User>} An object containing a success message and the created user.
-   * @throws {Error} If there is an error creating the user.
+   * @param {CreateUserDto} createUserDto - The user data to create.
+   * @return {Promise<User>} - The created user.
+   * @throws {ConflictException} - If the user already exists.
    */
-  async register(userData: CreateUserDto): Promise<User> {
-    return await this.userService.createUser(userData);
+  async register(createUserDto: CreateUserDto): Promise<User> {
+    // Check if user already exists
+    const isUserExists = await this.userRepository.findOneBy({
+      email: createUserDto.email,
+    });
+
+    if (isUserExists) {
+      // Throw error if user email already exists
+      throw new ConflictException('User already exists');
+    }
+
+    // Create new User
+    const user = this.userRepository.create(createUserDto);
+    // Save and return user
+    return await this.userRepository.save(user);
+  }
+
+  /**
+   * Checks if an email already exists in the database.
+   *
+   * @param {string} email - The email to check.
+   * @return {Promise<{ isEmailExists: boolean }>} - An object indicating if the email exists.
+   */
+  async checkEmail(email: string): Promise<{ isEmailExists: boolean }> {
+    // Find user with email
+    const user = await this.userRepository.findOne({
+      where: [{ email }],
+    });
+
+    // Return whether email exists or not
+    return {
+      isEmailExists: !!user,
+    };
   }
 }
