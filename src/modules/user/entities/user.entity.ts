@@ -17,14 +17,8 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 11, unique: true, nullable: true })
-  nis: string;
-
-  @Column({ type: 'varchar', length: 19, unique: true, nullable: true })
-  nip: string;
-
-  @Column({ type: 'varchar', length: 20 })
-  username: string;
+  @Column({ type: 'varchar' })
+  name: string;
 
   @Column({ type: 'varchar', length: 100, unique: true })
   email: string;
@@ -39,14 +33,14 @@ export class User {
   @ManyToOne(() => Role, (role) => role.users)
   role: Role;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  @CreateDateColumn({ name: 'createdAt', type: 'timestamptz' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  @UpdateDateColumn({ name: 'updatedAt', type: 'timestamptz' })
   updatedAt: Date;
 
   @Exclude()
-  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz' })
+  @DeleteDateColumn({ name: 'deletedAt', type: 'timestamptz' })
   deletedAt: Date;
 
   /**
