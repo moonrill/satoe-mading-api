@@ -10,6 +10,8 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { User } from '../user/entities/user.entity';
 import { UserLoginDto } from './dto/login.dto';
+import { GooglePayload } from './type/google-profile.type';
+import { UserType } from './type/user.type';
 
 @Injectable()
 export class AuthService {
@@ -55,11 +57,11 @@ export class AuthService {
    * Authenticates a user by validating their credentials and generating a JWT token.
    *
    * @param {UserLoginDto} userLoginDto - The user login data containing the email and password.
-   * @return {Promise<object>} - A promise that resolves to an object containing the login status,
+   * @return {Promise<UserType>} - A promise that resolves to an object containing the login status,
    * user details, and access token.
    * @throws {UnauthorizedException} - If the provided credentials are invalid.
    */
-  async login(userLoginDto: UserLoginDto): Promise<object> {
+  async login(userLoginDto: UserLoginDto): Promise<UserType> {
     // Validate the user's credentials.
     const user = await this.validateUser(
       userLoginDto.email,
@@ -88,10 +90,10 @@ export class AuthService {
    * Authenticates a user by validating their Google credentials and generating JWT tokens.
    *
    * @param {object} user - The user object containing the user's email and ID.
-   * @return {Promise<object>} - A promise that resolves to an object containing the login
+   * @return {Promise<UserType>} - A promise that resolves to an object containing the login
    * status, user details, and access and refresh tokens.
    */
-  async loginByGoogle(user: any): Promise<object> {
+  async loginByGoogle(user: any): Promise<UserType> {
     // Create the payload for the JWT tokens.
     const payload = {
       email: user.email,
@@ -128,6 +130,8 @@ export class AuthService {
       throw new ConflictException('User already exists');
     }
 
+    // TODO: validate email address before saving
+
     // Create new User
     const user = this.userRepository.create(createUserDto);
     // Save and return user
@@ -154,15 +158,11 @@ export class AuthService {
 
   /**
    * Validates a user by their Google profile data.
-   * If the user doesn't exist, creates a new user with the provided data.
    *
-   * @param {object} profile - The user's Google profile data.
-   * @param {string} profile.displayName - The user's display name.
-   * @param {Array<{ value: string }>} profile.emails - The user's email addresses.
-   * @param {Array<{ value: string }>} profile.photos - The user's profile photos.
+   * @param {GooglePayload} profile - The user's Google profile data.
    * @return {Promise<User | null>} The validated user, or null if the user doesn't exist.
    */
-  async validateUserByGoogle(profile: any): Promise<User | null> {
+  async validateUserByGoogle(profile: GooglePayload): Promise<User | null> {
     // Extract relevant information from the profile data
     const { displayName, emails, photos } = profile;
 
