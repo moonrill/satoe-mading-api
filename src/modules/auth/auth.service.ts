@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -6,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import validate from 'deep-email-validator';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { User } from '../user/entities/user.entity';
@@ -121,16 +123,12 @@ export class AuthService {
    */
   async register(createUserDto: CreateUserDto): Promise<User> {
     // Check if user already exists
-    const isUserExists = await this.userRepository.findOneBy({
-      email: createUserDto.email,
-    });
+    const { isEmailExists } = await this.checkEmail(createUserDto.email);
 
-    if (isUserExists) {
+    if (isEmailExists) {
       // Throw error if user email already exists
-      throw new ConflictException('User already exists');
+      throw new ConflictException('User already exists.');
     }
-
-    // TODO: validate email address before saving
 
     // Create new User
     const user = this.userRepository.create(createUserDto);
@@ -139,18 +137,26 @@ export class AuthService {
   }
 
   /**
-   * Checks if an email already exists in the database.
+   * Checks if the provided email exists in the database and validates its format.
    *
-   * @param {string} email - The email to check.
-   * @return {Promise<{ isEmailExists: boolean }>} - An object indicating if the email exists.
+   * @param email - The email address to be checked.
+   * @returns A promise resolving to an object indicating whether the email exists.
+   * @throws {BadRequestException} If the email is missing or invalid.
    */
   async checkEmail(email: string): Promise<{ isEmailExists: boolean }> {
-    // Find user with email
-    const user = await this.userRepository.findOne({
-      where: [{ email }],
-    });
+    if (!email) {
+      throw new BadRequestException('Email is required.');
+    }
 
-    // Return whether email exists or not
+    // Validate the email format
+    const isEmailValid = await validate(email);
+    if (!isEmailValid.valid) {
+      throw new BadRequestException('Invalid email, please try another one.');
+    }
+
+    // Check if the email exists in the database
+    const user = await this.userRepository.findOneBy({ email });
+
     return {
       isEmailExists: !!user,
     };

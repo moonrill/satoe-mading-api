@@ -62,6 +62,7 @@ export class AuthController {
 
   @Public({ route: true, permission: true })
   @Post('check-email')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Success check email' })
   async checkEmail(@Body() { email }) {
     return await this.authService.checkEmail(email);
